@@ -1,0 +1,179 @@
+<template>
+  <div class="detail">
+    <div class="back">
+      <button type="button" @click="myBack">返回</button>
+    </div>
+    <div class="info">
+       <div class="header">预约开户</div>
+       <div class="nav">
+          <span>{{title}}</span>
+          <div class="nav-detail">
+            <router-link to="/home/havedone">
+                  查看详情
+            </router-link>
+          </div>
+       </div>
+       <div class="ps" v-if="show == 3" id="ps" @click="addimg">拍照</div>
+       <div class="pslist">
+         <div v-if='tableData.length== 0' class="wushuju">暂无拍摄</div>
+         <div v-else>
+            <mt-cell v-for="(option,index) in tableData" :title="option.name" id="pslist" :key="index"  :to="{path:'/home/img'}">
+               <img  :src="option.imgsrc"  width="24" height="24"/>
+            </mt-cell>
+         </div>
+       </div>
+         <textarea  placeholder="调研意见"></textarea>
+        <div class="footer">
+         <el-button type="success" @click="Preservation">保存</el-button>
+         <el-button type="success">调研通过</el-button>
+         <el-button type="success">调研打回</el-button>
+       </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios'
+require('@/assets/jlanxin-1.2.0.js');
+export default {
+  name: '',
+  props: {},
+  data () {
+    return {
+      type: this.$route.params.type,
+      id: this.$route.params.id - 0,
+      title: this.$route.query.title,
+      show: this.$route.query.show,
+      imgSrc : '',
+      serverId :'',
+      name:1,
+      tableData: []
+    }
+  },
+  computed: {},
+  methods: {
+    myBack () {
+      console.log(this.show)
+      history.go(-1)
+    },
+    // 摄像机接口
+    addimg() {
+      var that = this;
+      window.lx.chooseImage({
+        count: 1, // 默认9
+        sizeType: ['original'], // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
+        success: function (res) {
+          // alert('111')
+          if (res && res.localIds) {
+          //  alert('222')
+            if (res.localIds.length != 1) {
+              showTipMsg('有且只能选择一张图片');
+              // alert('333')
+              return;
+            } else {
+            //  imgSrc = res.localIds;
+            // imgFlag = true;
+              alert(res.localIds[0]);
+              alert('444')
+              that.myUploadImage(res.localIds[0]);
+            }
+          }
+        }
+      });
+    },
+    // 上传
+    myUploadImage(myImgSrc) {
+      var that = this;
+      alert('555')
+      window.lx.uploadImage({
+        localId: myImgSrc, // 需要上传的图片的本地ID，由chooseImage接口获得
+        isShowProgressTips: 1, // 默认为1，显示进度提示
+        success: function (res) {
+          // alert('666')
+          // alert(res.serverId)
+          that.Preservation(res.serverId)
+        }
+      });
+    },
+    // 点击保存
+    Preservation(serverId) {
+      var   serverId0 = 'A9BEC01A-3BC4-4793-BBBE-D013BF7552BF'
+      var obj = {}
+      obj.name = this.name++;
+      obj.imgsrc = 'http://150.100.191.91:8080/mobileApproval/downloadFileByLxAdAppsConfig.do?head=lxtest&media_id=' + serverId0
+      this.tableData.unshift(obj)
+    }
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+div.detail{
+  background-color: #eee;
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+div.detail div.back{
+  background-color: #ddd;
+  height: 30px;
+  line-height: 30px;
+}
+div.detail div.back button{
+  background-color: transparent;
+  border: 0px;
+  color: green;
+  font-weight: bold;
+}
+.header{
+  height: 30px;
+  font-size: 24px;
+  text-align: center;
+  /*border: solid 1px #333;*/
+}
+.nav{
+  overflow: hidden;
+}
+.nav span{
+  margin: 20px;
+  float: left;
+}
+.nav .nav-detail{
+    float: right;
+    margin-right: 30px;
+    margin-top: 20px;
+}
+.ps{
+  width: 100px;
+  height: 100px;
+  border: solid 1px #333;
+  border-radius: 50%;
+  text-align: center;
+  margin: 10px auto ;
+  line-height: 100px;
+}
+textarea{
+  width: 80%;
+  margin-left:30px ;
+  height: 120px;
+  margin-bottom: 20px;
+  margin-top:20px;
+  resize:none;
+  text-align: center;
+  line-height: 120px;
+}
+
+.footer{
+  display: flex;
+ justify-content: center;
+}
+.wushuju{
+  text-align: center;
+  width: 100%;
+  height: 20px;
+}
+</style>
